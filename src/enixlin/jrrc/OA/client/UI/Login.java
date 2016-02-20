@@ -16,11 +16,15 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 
+import org.apache.http.client.utils.URIBuilder;
+
 import java.awt.ComponentOrientation;
 import java.awt.Point;
 import java.awt.Rectangle;
 import javax.swing.JComboBox;
 import java.awt.event.ActionListener;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.awt.event.ActionEvent;
 
 public class Login {
@@ -104,6 +108,22 @@ public class Login {
 				Main window_main = new Main();
 				window_main.setvisable();
 				Login.this.frmoa.dispose();
+				try {
+					URI uri=new URIBuilder()
+							.setScheme("http")
+							.setHost("linzhenhuan.net")
+							.setPath("/Jrrc_web/index.php")
+							.setParameter("s", "/Home/Login/index")
+							.build(); 
+					enixlin.jrrc.OA.client.net.Login login=new enixlin.jrrc.OA.client.net.Login();
+					login.setUri(uri);
+					login.start();
+					
+					
+				} catch (URISyntaxException e) {
+					e.printStackTrace();
+				}
+				
 
 			}
 		});
