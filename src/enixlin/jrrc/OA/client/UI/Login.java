@@ -1,31 +1,40 @@
 package enixlin.jrrc.OA.client.UI;
 
 import java.awt.EventQueue;
-
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-import javax.swing.JButton;
-import java.awt.Toolkit;
-
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.ImageIcon;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.plaf.nimbus.NimbusLookAndFeel;
-
-import org.apache.http.client.utils.URIBuilder;
-
-import java.awt.ComponentOrientation;
 import java.awt.Point;
 import java.awt.Rectangle;
-import javax.swing.JComboBox;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.awt.event.ActionEvent;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+import javax.management.RuntimeOperationsException;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 
 public class Login {
 
@@ -105,24 +114,8 @@ public class Login {
 		JButton btnNewButton = new JButton("\u767B\u5F55");
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				Main window_main = new Main();
-				window_main.setvisable();
-				Login.this.frmoa.dispose();
-				try {
-					URI uri=new URIBuilder()
-							.setScheme("http")
-							.setHost("linzhenhuan.net")
-							.setPath("/Jrrc_web/index.php")
-							.setParameter("s", "/Home/Login/index")
-							.build(); 
-					enixlin.jrrc.OA.client.net.Login login=new enixlin.jrrc.OA.client.net.Login();
-					login.setUri(uri);
-					login.start();
-					
-					
-				} catch (URISyntaxException e) {
-					e.printStackTrace();
-				}
+			web_login();
+				
 				
 
 			}
@@ -177,5 +170,88 @@ public class Login {
 		JLabel label_3 = new JLabel("\u754C\u9762\u98CE\u683C");
 		label_3.setBounds(34, 120, 54, 15);
 		frmoa.getContentPane().add(label_3);
+	}
+	
+	
+	public void web_login(){
+		new SwingWorker<StringBuilder, String>() {
+
+			@Override
+			protected StringBuilder doInBackground() throws Exception {
+				StringBuilder result=new StringBuilder();
+				
+				try {
+					URI uri=new URIBuilder()
+							.setScheme("http")
+							.setHost("linzhenhuan.net")
+							.setPath("/Jrrc_web/index.php")
+							.setParameter("s", "/Home/Login/index")
+							.build(); 
+					
+					CloseableHttpClient client = HttpClients.createDefault();
+
+					HttpPost httpPost = new HttpPost(uri.toString());
+					
+					System.out.println(uri.toString());
+					try {
+						CloseableHttpResponse response = client.execute(httpPost);
+						HttpEntity entity = response.getEntity();
+						if (entity != null) {
+							InputStream inputStream = entity.getContent();
+							
+							BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "utf-8"));
+							String line="";
+						
+							while ((line = bufferedReader.readLine()) != null) {
+								result.append(line);
+								result.append("/n");
+							}
+						
+						bufferedReader.close();
+						inputStream.close();
+						}
+						
+					} catch (ClientProtocolException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+					
+					
+				} catch (URISyntaxException  e) {
+					e.printStackTrace();
+				}
+				
+				
+				return result;
+			}
+
+			@Override
+			protected void done() {
+				// TODO Auto-generated method stub
+				try {
+					textField.setText(get().toString());
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ExecutionException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				super.done();
+			}
+
+			@Override
+			protected void process(List<String> chunks) {
+				// TODO Auto-generated method stub
+				super.process(chunks);
+			}
+			
+			
+			
+		}.execute();
 	}
 }
